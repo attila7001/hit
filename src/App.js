@@ -1,8 +1,4 @@
-return (
-    <div style={styles.container}>
-      <div style={styles.card}>
-        {startCountdown > 0 ? (
-          //import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 const HITTrainingApp = () => {
   // Einstellungen
@@ -633,9 +629,6 @@ const HITTrainingApp = () => {
               <div style={styles.timerInner}>
                 <div style={styles.timeDisplay}>
                   {formatTime(timeLeft)}
-                </div>
-                <div style={{...styles.phaseDisplay, color: isExercisePhase ? '#ef4444' : '#22c55e'}}>
-                  {isExercisePhase ? 'ARBEITEN' : 'ERHOLEN'}
                 </div>
               </div>
             </div>
