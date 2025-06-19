@@ -1,4 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+return (
+    <div style={styles.container}>
+      <div style={styles.card}>
+        {startCountdown > 0 ? (
+          //import React, { useState, useEffect, useRef } from 'react';
 
 const HITTrainingApp = () => {
   // Einstellungen
@@ -11,6 +15,9 @@ const HITTrainingApp = () => {
   
   // Visuelles Blinken
   const [isBlinking, setIsBlinking] = useState(false);
+  
+  // Countdown vor Training
+  const [startCountdown, setStartCountdown] = useState(0);
   
   // Klassische HIT Übungen
   const hitExercises = [
@@ -90,19 +97,33 @@ const HITTrainingApp = () => {
     playBeep(400, 300);
   };
   
-  // Training Modi starten
+  // Training Modi starten mit 3-Sekunden Countdown
   const start7MinuteHIT = () => {
     setTrainingMode('training');
     setExerciseDuration(30);
     setPauseDuration(10);
     setTotalExercises(12);
-    initAudio();
-    setIsRunning(true);
     setCurrentExercise(1);
     setIsExercisePhase(true);
-    setTimeLeft(30);
     setSidePlankSide('rechts');
-    setTimeout(() => playCountdown(), 500);
+    setIsRunning(false);
+    
+    // 3-Sekunden Countdown
+    setStartCountdown(3);
+    const countdownTimer = setInterval(() => {
+      setStartCountdown(prev => {
+        if (prev <= 1) {
+          clearInterval(countdownTimer);
+          // Training tatsächlich starten
+          initAudio();
+          setIsRunning(true);
+          setTimeLeft(30);
+          setTimeout(() => playCountdown(), 500);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
   };
   
   const start15LongVersion = () => {
@@ -110,13 +131,27 @@ const HITTrainingApp = () => {
     setExerciseDuration(30);
     setPauseDuration(15);
     setTotalExercises(14);
-    initAudio();
-    setIsRunning(true);
     setCurrentExercise(1);
     setIsExercisePhase(true);
-    setTimeLeft(30);
     setSidePlankSide('rechts');
-    setTimeout(() => playCountdown(), 500);
+    setIsRunning(false);
+    
+    // 3-Sekunden Countdown
+    setStartCountdown(3);
+    const countdownTimer = setInterval(() => {
+      setStartCountdown(prev => {
+        if (prev <= 1) {
+          clearInterval(countdownTimer);
+          // Training tatsächlich starten
+          initAudio();
+          setIsRunning(true);
+          setTimeLeft(30);
+          setTimeout(() => playCountdown(), 500);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
   };
   
   const startCustomTraining = () => {
@@ -133,16 +168,28 @@ const HITTrainingApp = () => {
   
   // Training starten (für freie Wahl)
   const startTraining = () => {
-    initAudio();
     setTrainingMode('training');
-    setIsRunning(true);
     setCurrentExercise(1);
     setIsExercisePhase(true);
-    setTimeLeft(exerciseDuration);
     setSidePlankSide('rechts');
+    setIsRunning(false);
     
-    // Countdown vor dem Start
-    setTimeout(() => playCountdown(), 500);
+    // 3-Sekunden Countdown
+    setStartCountdown(3);
+    const countdownTimer = setInterval(() => {
+      setStartCountdown(prev => {
+        if (prev <= 1) {
+          clearInterval(countdownTimer);
+          // Training tatsächlich starten
+          initAudio();
+          setIsRunning(true);
+          setTimeLeft(exerciseDuration);
+          setTimeout(() => playCountdown(), 500);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
   };
   
   // Training pausieren/fortsetzen
@@ -158,6 +205,7 @@ const HITTrainingApp = () => {
     setIsExercisePhase(true);
     setTimeLeft(exerciseDuration);
     setSidePlankSide('rechts');
+    setStartCountdown(0);
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
     }
@@ -243,15 +291,17 @@ const HITTrainingApp = () => {
   const styles = {
     container: {
       minHeight: '100vh',
-      background: isBlinking 
-        ? 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)' 
-        : 'linear-gradient(135deg, #1e3a8a 0%, #7c3aed 100%)',
+      background: startCountdown > 0 
+        ? `linear-gradient(135deg, hsl(${(3 - startCountdown) * 120}, 70%, 50%) 0%, hsl(${(3 - startCountdown) * 120 + 30}, 70%, 60%) 100%)`
+        : isBlinking 
+          ? 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)' 
+          : 'linear-gradient(135deg, #1e3a8a 0%, #7c3aed 100%)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
       padding: '16px',
       fontFamily: 'Arial, sans-serif',
-      transition: 'background 0.2s ease'
+      transition: 'background 1s ease'
     },
     card: {
       background: 'white',
@@ -515,88 +565,113 @@ const HITTrainingApp = () => {
   return (
     <div style={styles.container}>
       <div style={styles.card}>
-        <div style={styles.trainingHeader}>
-          <h2 style={styles.trainingTitle}>
-            {isExercisePhase ? 'ÜBUNG' : 'PAUSE'}
-          </h2>
-          <p style={styles.trainingSubtitle}>
-            Übung {currentExercise} von {totalExercises}
-          </p>
-          {isExercisePhase && (
-            <h3 style={styles.exerciseName}>
-              {getCurrentExerciseName()}
-            </h3>
-          )}
-        </div>
-        
-        {/* Visueller Timer */}
-        <div style={styles.timerContainer}>
-          <svg width="256" height="256" viewBox="0 0 200 200" style={{transform: 'rotate(-90deg)'}}>
-            {/* Hintergrund Kreis */}
-            <circle
-              cx="100"
-              cy="100"
-              r="90"
-              stroke="#e5e7eb"
-              strokeWidth="12"
-              fill="none"
-            />
-            {/* Fortschritts Kreis */}
-            <circle
-              cx="100"
-              cy="100"
-              r="90"
-              stroke={isExercisePhase ? "#ef4444" : "#22c55e"}
-              strokeWidth="12"
-              fill="none"
-              strokeLinecap="round"
-              strokeDasharray={circumference}
-              strokeDashoffset={strokeDashoffset}
-              style={{transition: 'all 1s linear'}}
-            />
-          </svg>
-          
-          {/* Zeit Anzeige */}
-          <div style={styles.timerInner}>
-            <div style={styles.timeDisplay}>
-              {formatTime(timeLeft)}
-            </div>
-            <div style={{...styles.phaseDisplay, color: isExercisePhase ? '#ef4444' : '#22c55e'}}>
-              {isExercisePhase ? 'ARBEITEN' : 'ERHOLEN'}
+        {startCountdown > 0 ? (
+          // 3-Sekunden Countdown Anzeige
+          <div style={{textAlign: 'center'}}>
+            <h2 style={{fontSize: '24px', fontWeight: 'bold', color: '#1f2937', marginBottom: '16px'}}>
+              Training startet in...
+            </h2>
+            <div style={{fontSize: '72px', fontWeight: 'bold', color: '#1f2937'}}>
+              {startCountdown}
             </div>
           </div>
-        </div>
-        
-        {/* Kontrollen */}
-        <div style={styles.controlContainer}>
-          <button
-            onClick={togglePause}
-            style={{
-              ...styles.controlButton,
-              background: isRunning ? '#f97316' : '#22c55e'
-            }}
-            onMouseOver={(e) => e.target.style.opacity = '0.9'}
-            onMouseOut={(e) => e.target.style.opacity = '1'}
-          >
-            {isRunning ? 'Pause' : 'Weiter'}
-          </button>
-          
-          <button
-            onClick={stopTraining}
-            style={{...styles.controlButton, background: '#ef4444'}}
-            onMouseOver={(e) => e.target.style.opacity = '0.9'}
-            onMouseOut={(e) => e.target.style.opacity = '1'}
-          >
-            Stopp
-          </button>
-        </div>
-        
-        <button
-          onClick={() => setTrainingMode('dashboard')}
-          style={styles.dashboardButton}
-        >
-          Dashboard
-        </button>
+        ) : (
+          // Normales Training Interface
+          <>
+            <div style={styles.trainingHeader}>
+              <h2 style={styles.trainingTitle}>
+                {(exerciseDuration === 30 && (pauseDuration === 10 || pauseDuration === 15)) ? (
+                  // 7-Min oder 14er Long - Übungsname oben anzeigen
+                  isExercisePhase ? getCurrentExerciseName() : 'PAUSE'
+                ) : (
+                  // Freie Wahl - nur ÜBUNG/PAUSE anzeigen
+                  isExercisePhase ? 'ÜBUNG' : 'PAUSE'
+                )}
+              </h2>
+              <p style={styles.trainingSubtitle}>
+                Übung {currentExercise} von {totalExercises}
+              </p>
+              {/* Nächste Übung in Pause anzeigen (nur für 7-Min und 14er Long) */}
+              {!isExercisePhase && (exerciseDuration === 30 && (pauseDuration === 10 || pauseDuration === 15)) && currentExercise < totalExercises && (
+                <div style={{marginTop: '16px'}}>
+                  <div style={{fontSize: '14px', color: '#6b7280', marginBottom: '4px'}}>Als nächstes:</div>
+                  <h3 style={styles.exerciseName}>
+                    {hitExercises[currentExercise % hitExercises.length]}
+                  </h3>
+                </div>
+              )}
+            </div>
+            
+            {/* Visueller Timer */}
+            <div style={styles.timerContainer}>
+              <svg width="256" height="256" viewBox="0 0 200 200" style={{transform: 'rotate(-90deg)'}}>
+                {/* Hintergrund Kreis */}
+                <circle
+                  cx="100"
+                  cy="100"
+                  r="90"
+                  stroke="#e5e7eb"
+                  strokeWidth="12"
+                  fill="none"
+                />
+                {/* Fortschritts Kreis */}
+                <circle
+                  cx="100"
+                  cy="100"
+                  r="90"
+                  stroke={isExercisePhase ? "#ef4444" : "#22c55e"}
+                  strokeWidth="12"
+                  fill="none"
+                  strokeLinecap="round"
+                  strokeDasharray={circumference}
+                  strokeDashoffset={strokeDashoffset}
+                  style={{transition: 'all 1s linear'}}
+                />
+              </svg>
+              
+              {/* Zeit Anzeige */}
+              <div style={styles.timerInner}>
+                <div style={styles.timeDisplay}>
+                  {formatTime(timeLeft)}
+                </div>
+                <div style={{...styles.phaseDisplay, color: isExercisePhase ? '#ef4444' : '#22c55e'}}>
+                  {isExercisePhase ? 'ARBEITEN' : 'ERHOLEN'}
+                </div>
+              </div>
+            </div>
+            
+            {/* Kontrollen */}
+            <div style={styles.controlContainer}>
+              <button
+                onClick={togglePause}
+                style={{
+                  ...styles.controlButton,
+                  background: isRunning ? '#f97316' : '#22c55e'
+                }}
+                onMouseOver={(e) => e.target.style.opacity = '0.9'}
+                onMouseOut={(e) => e.target.style.opacity = '1'}
+              >
+                {isRunning ? 'Pause' : 'Weiter'}
+              </button>
+              
+              <button
+                onClick={stopTraining}
+                style={{...styles.controlButton, background: '#ef4444'}}
+                onMouseOver={(e) => e.target.style.opacity = '0.9'}
+                onMouseOut={(e) => e.target.style.opacity = '1'}
+              >
+                Stopp
+              </button>
+            </div>
+            
+            <button
+              onClick={stopTraining}
+              style={styles.dashboardButton}
+            >
+              Dashboard
+            </button>
+          </>
+        )}
       </div>
     </div>
   );
